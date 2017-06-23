@@ -286,17 +286,20 @@ class Minesweeper():
 
     def Retry(self):
         root.destroy()
-        main(self.Diffic_Var.get())
+        game(self.Diffic_Var.get())
 
 # END OF minesweeper (class)
 
-
-def main(retry_diffic='0'):
+def game(retry_diffic='0'):
     global root
     root = tkinter.Tk()
     root.title("Minesweeper")
-    game = Minesweeper(root, retry_diffic)
+    Minesweeper(root, retry_diffic)
     root.mainloop()
+
+
+def main():
+    game()
 
 if __name__ == "__main__":
     main()

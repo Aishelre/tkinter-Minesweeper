@@ -7,12 +7,12 @@ import time
 import math
 
 
-class minesweeper():
-    def __init__(self, master):
+class Minesweeper():
+    def __init__(self, master, retry_diffic):
         # set up frame
         self.frame = tkinter.Frame(master)
-        self.info_frame = tkinter.Frame(master)
-        self.init_frame = tkinter.Frame(master)
+        self.info_frame = tkinter.Frame(master) # show the number of mine, clicked, time, retry btn
+        self.init_frame = tkinter.Frame(master) # choose difficulty
         self.init_frame.pack(padx=10, pady=10)
 
         # initialization
@@ -20,11 +20,11 @@ class minesweeper():
         self.running_time = tkinter.IntVar(value=0)
 
         self.first_try = 1 # 1 : Preventing First Click from being Mine
-        self._max=0
+        self.max=0
         self.flag = 0
         self.mines = tkinter.IntVar(value=0) # the number of mine
         self.clicked_num = tkinter.IntVar(value=0) # the number of clicked
-        self.Diff_Var = tkinter.StringVar(value='0')
+        self.Diffic_Var = tkinter.StringVar(value='0')
         self.prob = 0
 
         # import images
@@ -40,7 +40,11 @@ class minesweeper():
 
         # Game Start
         self.set_menubar(master)
-        self.choose_difficulty()
+        if retry_diffic == '0':
+            self.choose_difficulty()
+        else:
+            self.Diffic_Var.set(retry_diffic)
+            self.clear_init_frame()
         self.grid_widgets()
 
     # END OF __init__
@@ -57,13 +61,13 @@ class minesweeper():
         game_menu.add_command(label="New Game", command=self.Retry)
         game_menu.add_separator()
         game_menu.add_command(label="Exit", command=master.destroy)
-        setting_menu.add_command(label="actually..there's no setting")
+        setting_menu.add_command(label="There's no setting yet.")
 
     def choose_difficulty(self):
-        self.Diff_Var.set(0)
-        self.Difficulty_low = tkinter.Radiobutton(self.init_frame, text="Easy mode           ", variable = self.Diff_Var, value="Easy")
-        self.Difficulty_mid = tkinter.Radiobutton(self.init_frame, text="Intermediate mode", variable = self.Diff_Var, value="Intermediate")
-        self.Difficulty_high = tkinter.Radiobutton(self.init_frame, text="Hard mode           ", variable = self.Diff_Var, value="Hard")
+        self.Diffic_Var.set(0)
+        self.Difficulty_low = tkinter.Radiobutton(self.init_frame, text="Easy mode           ", variable = self.Diffic_Var, value="Easy")
+        self.Difficulty_mid = tkinter.Radiobutton(self.init_frame, text="Intermediate mode", variable = self.Diffic_Var, value="Intermediate")
+        self.Difficulty_high = tkinter.Radiobutton(self.init_frame, text="Hard mode           ", variable = self.Diffic_Var, value="Hard")
         self.Difficulty_low.grid(row=1, column=0, padx=20, pady=5)
         self.Difficulty_mid.grid(row=2, column=0, padx=20, pady=5)
         self.Difficulty_high.grid(row=3, column=0, padx=20, pady=5)
@@ -71,18 +75,18 @@ class minesweeper():
         self.Start_btn.grid(row=2, column=1, padx=10, rowspan=1)
 
     def clear_init_frame(self):
-        self.init_frame.destroy()
+        self.init_frame.destroy() # destroy Choosing Diffic window
 
         # set diff
-        if self.Diff_Var.get() == "Easy":
+        if self.Diffic_Var.get() == "Easy":
             self.prob = 0.16
-            self._max = 5
-        elif self.Diff_Var.get() == "Intermediate":
+            self.max = 5
+        elif self.Diffic_Var.get() == "Intermediate":
             self.prob = 0.20
-            self._max = 10
-        elif self.Diff_Var.get() == "Hard":
+            self.max = 10
+        elif self.Diffic_Var.get() == "Hard":
             self.prob = 0.25
-            self._max = 20
+            self.max = 20
         else:
             tkinter.messagebox.showerror("Initialization Fail..", "Choose Difficulty.")
             root.destroy()
@@ -105,9 +109,9 @@ class minesweeper():
         while True:
             x_coord = 0
             y_coord = 1
-            for x in range(0, self._max ** 2):
+            for x in range(0, self.max ** 2):
                 mine = 0
-                if random.uniform(0.0, 1.0) < self.prob:  # prob = 0.13 or 0.16 or 0,25
+                if random.uniform(0.0, 1.0) < self.prob:  # prob = 0.13 or 0.20 or 0,25
                     mine = 1
                     self.mines.set(self.mines.get() + 1)
                 # 0 = Button widget
@@ -121,13 +125,14 @@ class minesweeper():
 
                 # calculate coords:
                 x_coord += 1
-                if x_coord == self._max:
+                if x_coord == self.max:
                     x_coord = 0
                     y_coord += 1
 
             if self.mines.get() == 0:
                 continue
-            else: break
+            else:
+                break
 
         # lay buttons in grid
         for key in self.buttons:
@@ -139,21 +144,21 @@ class minesweeper():
         self.Main_Label.grid(row=0, column=0, columnspan=30)
         # lay information in grid
         self.lb_mine = tkinter.Label(self.info_frame, text="Mine :")
-        self.lb_mine.grid(row=self._max + 2, column=0)
+        self.lb_mine.grid(row=self.max + 2, column=0)
         self.lb_mine_num = tkinter.Label(self.info_frame, textvariable=self.mines)
-        self.lb_mine_num.grid(row=self._max + 2, column=1)
+        self.lb_mine_num.grid(row=self.max + 2, column=1)
         self.lb_clicked = tkinter.Label(self.info_frame, text="Click :")
-        self.lb_clicked.grid(row=self._max + 2, column=3, sticky='e')
+        self.lb_clicked.grid(row=self.max + 2, column=3, sticky='e')
         self.lb_clicked_num = tkinter.Label(self.info_frame, textvariable=self.clicked_num)
-        self.lb_clicked_num.grid(row=self._max + 2, column=4)
+        self.lb_clicked_num.grid(row=self.max + 2, column=4)
         self.image_time = tkinter.Button(self.info_frame, image=self.watch, borderwidth=0)
-        self.image_time.grid(row=self._max + 3, column=0)
+        self.image_time.grid(row=self.max + 3, column=0)
         self.lb_time = tkinter.Label(self.info_frame, textvariable=self.running_time)
-        self.lb_time.grid(row=self._max + 3, column=1)
+        self.lb_time.grid(row=self.max + 3, column=1)
         self.retry = tkinter.Button(self.info_frame, text="Retry", command=self.Retry, padx=1)
-        self.retry.grid(row=self._max + 3, column=3, padx=10, columnspan=3, sticky='we')
+        self.retry.grid(row=self.max + 3, column=3, padx=10, columnspan=3, sticky='we')
         self.empty_lb = tkinter.Label(self.info_frame, text="   ")
-        self.empty_lb.grid(row=self._max+2, column=2)
+        self.empty_lb.grid(row=self.max + 2, column=2)
 
     def lclicked_wrapper(self, x):
         return lambda Button: self.lclicked(x)
@@ -163,7 +168,7 @@ class minesweeper():
 
     def make_one_mine(self):
         while True:
-            temp_x = random.randrange(0,self._max)
+            temp_x = random.randrange(0, self.max)
             if self.buttons[temp_x][1] == 1: # if mine
                 continue
             elif self.buttons[temp_x][1] == 0: #if not mine
@@ -190,7 +195,7 @@ class minesweeper():
 
             self.check_nearby(x)
             self.buttons[x][0].unbind('<Button-1>')
-            if self.mines.get()+self.clicked_num.get()+self.flag == self._max**2:
+            if self.mines.get()+self.clicked_num.get()+self.flag == self.max**2:
                 self.show_all_mines_win()
                 self.victory()
 
@@ -226,15 +231,15 @@ class minesweeper():
         idx = x
         count = 0
         for i in [0,1,1]:
-            idx += i*self._max
+            idx += i*self.max
             for j in range(-1, 2):
-                key = idx- self._max + j
+                key = idx- self.max + j
 
-                if key<0 or key>=self._max**2: # none exist space
+                if key<0 or key>=self.max**2: # none exist space
                     continue
-                elif idx % self._max == self._max - 1 and key%self._max ==0 : # physically not close space
+                elif idx % self.max == self.max - 1 and key%self.max ==0 : # physically not close space
                     continue
-                elif idx % self._max == 0 and key % self._max == self._max - 1: # physically not close space
+                elif idx % self.max == 0 and key % self.max == self.max - 1: # physically not close space
                     continue
                 elif self.buttons[key][1] == 1: # if mine
                     count+=1
@@ -244,15 +249,15 @@ class minesweeper():
     def show_nearby_none_mine(self, x):
         idx = x
         for i in [0, 1, 1]:
-            idx += i * self._max
+            idx += i * self.max
             for j in range(-1, 2):
-                key = idx - self._max + j
+                key = idx - self.max + j
 
-                if key < 0 or key >= self._max ** 2:  # none exist space
+                if key < 0 or key >= self.max ** 2:  # none exist space
                     continue
-                elif idx % self._max == self._max - 1 and key % self._max == 0:  # physically not close space
+                elif idx % self.max == self.max - 1 and key % self.max == 0:  # physically not close space
                     continue
-                elif idx % self._max == 0 and key % self._max == self._max - 1:  # physically not close space
+                elif idx % self.max == 0 and key % self.max == self.max - 1:  # physically not close space
                     continue
                 elif self.buttons[key][1] == 0 and self.buttons[key][2] != 1:  # if not mine and unclicked
                     self.lclicked(key)
@@ -281,16 +286,16 @@ class minesweeper():
 
     def Retry(self):
         root.destroy()
-        main()
+        main(self.Diffic_Var.get())
 
 # END OF minesweeper (class)
 
 
-def main():
+def main(retry_diffic='0'):
     global root
     root = tkinter.Tk()
     root.title("Minesweeper")
-    game = minesweeper(root)
+    game = Minesweeper(root, retry_diffic)
     root.mainloop()
 
 if __name__ == "__main__":

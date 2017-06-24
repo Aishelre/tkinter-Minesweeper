@@ -8,22 +8,23 @@ import math
 
 
 class Minesweeper():
-    def __init__(self, master, retry_diffic):
+    def __init__(self, root, retry_diffic):
+        self.master = root
         # set up frame
-        self.frame = tkinter.Frame(master)
-        self.info_frame = tkinter.Frame(master) # show the number of mine, clicked, time, retry btn
-        self.init_frame = tkinter.Frame(master) # choose difficulty
+        self.frame = tkinter.Frame(self.master)
+        self.info_frame = tkinter.Frame(self.master)  # show the number of mine, clicked, time, retry btn
+        self.init_frame = tkinter.Frame(self.master)  # choose difficulty
         self.init_frame.pack(padx=10, pady=10)
 
         # initialization
         self.start_time = time.time()
         self.running_time = tkinter.IntVar(value=0)
 
-        self.first_try = 1 # 1 : Preventing First Click from being Mine
+        self.first_try = 1  # 1 : Preventing First Click from being Mine
         self.max=0
         self.flag = 0
-        self.mines = tkinter.IntVar(value=0) # the number of mine
-        self.clicked_num = tkinter.IntVar(value=0) # the number of clicked
+        self.mines = tkinter.IntVar(value=0)  # the number of mine
+        self.clicked_num = tkinter.IntVar(value=0)  # the number of clicked
         self.Diffic_Var = tkinter.StringVar(value='0')
         self.prob = 0
 
@@ -39,7 +40,7 @@ class Minesweeper():
             self.tile_no.append(tkinter.PhotoImage(file="images/tile_" + str(x) + ".gif"))
 
         # Game Start
-        self.set_menubar(master)
+        self.set_menubar()
         if retry_diffic == '0':
             self.choose_difficulty()
         else:
@@ -49,18 +50,18 @@ class Minesweeper():
 
     # END OF __init__
 
-    def set_menubar(self, master):
-        menubar = tkinter.Menu(master)
-        master['menu'] = menubar
+    def set_menubar(self):
+        menubar = tkinter.Menu(self.master)
+        self.master['menu'] = menubar
 
         game_menu = tkinter.Menu(menubar, tearoff=0, bd=5)
         menubar.add_cascade(label="Game", menu=game_menu)
         setting_menu = tkinter.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Setting", menu=setting_menu)
 
-        game_menu.add_command(label="New Game", command=self.Retry)
+        game_menu.add_command(label="New Game", command=self.new_game)
         game_menu.add_separator()
-        game_menu.add_command(label="Exit", command=master.destroy)
+        game_menu.add_command(label="Exit", command=self.master.destroy)
         setting_menu.add_command(label="There's no setting yet.")
 
     def choose_difficulty(self):
@@ -89,8 +90,8 @@ class Minesweeper():
             self.max = 20
         else:
             tkinter.messagebox.showerror("Initialization Fail..", "Choose Difficulty.")
-            root.destroy()
-            main()
+            self.master.destroy()
+            game()
         # set up new frame
         self.frame.pack(padx=20, pady=10)
         self.info_frame.pack()
@@ -155,7 +156,7 @@ class Minesweeper():
         self.image_time.grid(row=self.max + 3, column=0)
         self.lb_time = tkinter.Label(self.info_frame, textvariable=self.running_time)
         self.lb_time.grid(row=self.max + 3, column=1)
-        self.retry = tkinter.Button(self.info_frame, text="Retry", command=self.Retry, padx=1)
+        self.retry = tkinter.Button(self.info_frame, text="Retry", command=self.retry_game, padx=1)
         self.retry.grid(row=self.max + 3, column=3, padx=10, columnspan=3, sticky='we')
         self.empty_lb = tkinter.Label(self.info_frame, text="   ")
         self.empty_lb.grid(row=self.max + 2, column=2)
@@ -230,19 +231,19 @@ class Minesweeper():
     def check_nearby(self, x):
         idx = x
         count = 0
-        for i in [0,1,1]:
+        for i in [0, 1, 1]:
             idx += i*self.max
             for j in range(-1, 2):
-                key = idx- self.max + j
+                key = idx - self.max + j
 
-                if key<0 or key>=self.max**2: # none exist space
+                if key < 0 or key >= self.max**2:  # none exist space
                     continue
-                elif idx % self.max == self.max - 1 and key%self.max ==0 : # physically not close space
+                elif idx % self.max == self.max - 1 and key % self.max == 0 :  # physically not close space
                     continue
-                elif idx % self.max == 0 and key % self.max == self.max - 1: # physically not close space
+                elif idx % self.max == 0 and key % self.max == self.max - 1:  # physically not close space
                     continue
-                elif self.buttons[key][1] == 1: # if mine
-                    count+=1
+                elif self.buttons[key][1] == 1:  # if mine
+                    count += 1
 
         self.change_to_tile_no(x, count)
 
@@ -273,35 +274,33 @@ class Minesweeper():
     def gameover(self):
         ask_retry = tkinter.messagebox.askokcancel("You Lose.", "Try again?")
         if ask_retry == True:
-            self.Retry()
+            self.retry_game()
         else:
-            root.destroy()
+            self.master.destroy()
 
     def victory(self):
         ask_retry = tkinter.messagebox.askokcancel("You Win.", "Congratulation.\nWould you like to Try again?")
         if ask_retry == True:
-            self.Retry()
+            self.new_game()
         else:
-            root.destroy()
+            self.master.destroy()
 
-    def Retry(self):
-        root.destroy()
+    def retry_game(self):
+        self.master.destroy()
         game(self.Diffic_Var.get())
+    def new_game(self):
+        self.master.destroy()
+        game()
 
 # END OF minesweeper (class)
 
+
 def game(retry_diffic='0'):
-    global root
     root = tkinter.Tk()
     root.title("Minesweeper")
     Minesweeper(root, retry_diffic)
     root.mainloop()
 
 
-def main():
-    game()
-
-if __name__ == "__main__":
-    main()
 
 
